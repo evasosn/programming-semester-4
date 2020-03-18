@@ -2,10 +2,17 @@
 #include "words.c"
 #include "minunit.h"
 
+MU_TEST(forth_tests_nocompileword) {
+    struct forth forth = {0};
+    forth_init(&forth, stdin, 100, 100, 100);
+    words_add(&forth);
+    const char* ErrorSquare[] = { "dup", "e", "exit", 0 };
+    mu_check(forth_add_compileword(&forth, "err_square", ErrorSquare) == 1);
+}
+
 MU_TEST(forth_tests_init_free) {
     struct forth forth = {0};
     forth_init(&forth, stdin, 100, 100, 100);
-    
     mu_check(forth.memory == forth.memory_free);
     mu_check(forth.memory != NULL);
     mu_check(forth.sp0 == forth.sp);
@@ -96,6 +103,7 @@ MU_TEST(forth_tests_literal) {
 }
 
 MU_TEST_SUITE(forth_tests) {
+    MU_RUN_TEST(forth_tests_nocompileword);
     MU_RUN_TEST(forth_tests_init_free);
     MU_RUN_TEST(forth_tests_align);
     MU_RUN_TEST(forth_tests_push_pop);
