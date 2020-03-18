@@ -2,6 +2,14 @@
 #include "words.c"
 #include "minunit.h"
 
+MU_TEST(forth_tests_top) {
+    struct forth forth = {0};
+    forth_init(&forth, stdin, 100, 100, 100);
+    forth_push(&forth, 123);
+
+    mu_check(*forth_top(&forth) == 123);
+}
+
 MU_TEST(forth_tests_nocompileword) {
     struct forth forth = {0};
     forth_init(&forth, stdin, 100, 100, 100);
@@ -103,6 +111,7 @@ MU_TEST(forth_tests_literal) {
 }
 
 MU_TEST_SUITE(forth_tests) {
+    MU_RUN_TEST(forth_tests_top);
     MU_RUN_TEST(forth_tests_nocompileword);
     MU_RUN_TEST(forth_tests_init_free);
     MU_RUN_TEST(forth_tests_align);
