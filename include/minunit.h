@@ -364,7 +364,8 @@ static double mu_timer_cpu(void)
 
 #if defined(_SC_CLK_TCK)
 	{
-		const double ticks = (double)sysconf( _SC_CLK_TCK );
+                long int tmp = sysconf( _SC_CLK_TCK );
+		const double ticks = (double)tmp;
 		struct tms tms;
 		if ( times( &tms ) != (clock_t)-1 )
 			return (double)tms.tms_utime / ticks;
