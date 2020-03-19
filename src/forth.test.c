@@ -15,7 +15,7 @@ MU_TEST(forth_tests_run) {
     forth_init(&forth, file, 100, 100, 100);
     words_add(&forth);
     mu_check(forth_run(&forth) == FORTH_EOF);
-    
+    cell_print(*forth.memory);
     remove("./file.txt");
 }
 
