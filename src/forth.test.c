@@ -2,6 +2,23 @@
 #include "words.c"
 #include "minunit.h"
 
+MU_TEST(forth_tests_run) {
+    struct forth forth = {0};
+    FILE *file;
+
+    file = fopen("./file.txt", "w");
+    if (!file) return;
+    fprintf(file,"1 2 3 : + 3 e exit ; ");
+    fclose(file);
+
+    file = fopen("./file.txt", "r");
+    forth_init(&forth, file, 100, 100, 100);
+    words_add(&forth);
+    mu_check(forth_run(&forth) == FORTH_EOF);
+    
+    remove("./file.txt");
+}
+
 MU_TEST(forth_tests_readword) {
     FILE *file;
     size_t length;
@@ -134,6 +151,7 @@ MU_TEST(forth_tests_literal) {
 }
 
 MU_TEST_SUITE(forth_tests) {
+    MU_RUN_TEST(forth_tests_run);
     MU_RUN_TEST(forth_tests_readword);
     MU_RUN_TEST(forth_tests_top);
     MU_RUN_TEST(forth_tests_nocompileword);
