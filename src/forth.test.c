@@ -2,10 +2,46 @@
 #include "words.c"
 #include "minunit.h"
 
+void do_operation(char *operation, cell expected, char *filePath, struct forth* forth);
+
+void do_operation(char *operation, cell expected, char *filePath, struct forth* forth) {
+    FILE* input;
+
+    input = fopen(filePath, "w");
+    if (!input) return;
+    fprintf(input,"1 2 3 %s", operation);
+    fclose(input);
+
+    input = fopen(filePath, "r");
+    forth_init(forth, input, 1000, 1000, 1000);
+    words_add(forth);
+    forth_run(forth);
+    fclose(input);
+
+    mu_check(*forth_top(forth) == expected);
+    forth_free(forth);
+    remove(filePath);
+}
+
+MU_TEST(forth_tests_task4) {
+    struct forth forth = {0};
+
+    do_operation("key     w chtop", 'w', "./test.txt", &forth);
+    do_operation("key", 3, "./test.txt", &forth);
+    do_operation("\\ dfigjeorhw 3 5 \n 5 6", 6, "./test.txt", &forth);
+    do_operation("(", 3, "./test.txt", &forth);
+    do_operation("\\", 3, "./test.txt", &forth);
+    do_operation("( это комментарий ( ) \n \
+                  и это всё ещё комментарий,\n \
+                  в отличие от C) \\ а здесь предыдущий комментарий уже закончился\n \
+                  6", 6, "./test.txt", &forth);
+    forth_free(&forth);
+}
+
 MU_TEST(forth_tests_init_free) {
     struct forth forth = {0};
     forth_init(&forth, stdin, 100, 100, 100);
-    
+
     mu_check(forth.memory == forth.memory_free);
     mu_check(forth.memory != NULL);
     mu_check(forth.sp0 == forth.sp);
@@ -96,6 +132,7 @@ MU_TEST(forth_tests_literal) {
 }
 
 MU_TEST_SUITE(forth_tests) {
+    MU_RUN_TEST(forth_tests_task4);
     MU_RUN_TEST(forth_tests_init_free);
     MU_RUN_TEST(forth_tests_align);
     MU_RUN_TEST(forth_tests_push_pop);
