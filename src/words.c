@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "words.h"
 
@@ -13,6 +14,10 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "interpret", interpreter_stub);
     forth->stopword = forth->latest;
     forth->executing = &forth->stopword;
+
+    forth_add_codeword(forth, "key", key);
+    forth_add_codeword(forth, "chtop", chtop);
+
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
     forth_add_codeword(forth, "+", add);
@@ -59,9 +64,23 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "find", find);
     forth_add_codeword(forth, ",", comma);
     forth_add_codeword(forth, "next", next);
-
     status = forth_add_compileword(forth, "square", square);
     assert(!status);
+}
+
+void chtop(struct forth *forth) {
+    printf("%c \n", (char)(*forth_top(forth)));
+}
+
+void key(struct forth *forth) {
+    int flag;
+    flag = fgetc(forth->input);
+    while (isspace(flag)){
+        flag = fgetc(forth->input);
+    }
+    if (flag != EOF) {
+        forth_push(forth, flag);
+    }
 }
 
 void drop(struct forth *forth) {
