@@ -2,6 +2,114 @@
 #include "words.c"
 #include "minunit.h"
 
+void do_operation(char *operation, cell expected, char *filePath, struct forth* forth);
+void do_roperation(char *operation, cell expected, char *filePath, struct forth* forth);
+void do_memoperation(char *operation, char *filePath, struct forth* forth);
+
+
+void do_operation(char *operation, cell expected, char *filePath, struct forth* forth) {
+    FILE* input;
+
+    input = fopen(filePath, "w");
+    if (!input) return;
+    fprintf(input,"1 2 3 %s", operation);
+    fclose(input);
+
+    input = fopen(filePath, "r");
+    forth_init(forth, input, 1000, 1000, 1000);
+    words_add(forth);
+    forth_run(forth);
+    fclose(input);
+
+    mu_check(*forth_top(forth) == expected);
+    forth_free(forth);
+    remove(filePath);
+}
+
+void do_roperation(char *operation, cell expected, char *filePath, struct forth* forth) {
+    FILE* input;
+    input = fopen(filePath, "w");
+    if (!input) return;
+    fprintf(input,"1 2 3 4 5 + >r >r %s", operation);
+    fclose(input);
+
+    input = fopen(filePath, "r");
+    forth_init(forth, input, 1000, 1000, 1000);
+    words_add(forth);
+    forth_run(forth);
+    fclose(input);
+
+    mu_check(*forth_top(forth) == expected);
+    forth_free(forth);
+    remove(filePath);
+}
+
+void do_memoperation(char *operation, char *filePath, struct forth* forth) {
+    FILE* input;
+    input = fopen(filePath, "w");
+    if (!input) return;
+    fprintf(input,": 1 2 ; 3 here %s 6 immediate", operation);
+    fclose(input);
+
+    input = fopen(filePath, "r");
+    forth_init(forth, input, 1000, 1000, 1000);
+    words_add(forth);
+    forth_run(forth);
+    fclose(input);
+
+    forth_free(forth);
+    remove(filePath);
+}
+
+MU_TEST(forth_tests_words) {
+    struct forth forth = {0};
+    struct word **a;
+    do_operation("drop", 2,"./file.txt", &forth);
+    do_operation("dup", 3,"./file.txt", &forth);
+    do_operation("+", 5,"./file.txt", &forth);
+    do_operation("-", -1,"./file.txt", &forth);
+    do_operation("*", 6,"./file.txt", &forth);
+    do_operation("/", 0,"./file.txt", &forth);
+    do_operation("%", 2,"./file.txt", &forth);
+    do_operation("swap", 2,"./file.txt", &forth);
+    do_operation("rot", 1,"./file.txt", &forth);
+    do_operation("-rot", 2,"./file.txt", &forth);
+    do_operation("show", 3,"./file.txt", &forth);
+    do_operation("over", 2,"./file.txt", &forth);
+    do_operation("true", -1,"./file.txt", &forth);
+    do_operation("false", 0,"./file.txt", &forth);
+    do_operation("xor", 2^3,"./file.txt", &forth);
+    do_operation("or", 2|3,"./file.txt", &forth);
+    do_operation("and", 2&3,"./file.txt", &forth);
+    do_operation("not", ~3,"./file.txt", &forth);
+    do_operation("=", 0,"./file.txt", &forth);
+    do_operation("<", -1,"./file.txt", &forth);
+    do_operation("within", 0, "./file.txt", &forth);
+
+    do_roperation(">r", 1, "./file.txt", &forth);
+    do_roperation("r>", 3, "./file.txt", &forth);
+    do_roperation("rshow", 2, "./file.txt", &forth);
+    do_roperation("i", 9, "./file.txt", &forth);
+
+    do_memoperation("@", "./file.txt", &forth);
+    do_memoperation("!", "./file.txt", &forth);
+    do_memoperation(",", "./file.txt", &forth);
+    do_memoperation("word", "./file.txt", &forth);
+    do_memoperation("find", "./file.txt", &forth);
+    do_memoperation(">cfa word find", "./file.txt", &forth);
+    do_operation(": repeat immediate ' branch , swap here @ - ,	dup here @ swap - swap ! ;\
+                  : begin immediate here @ ; : while immediate ' 0branch , here @ 0 , ;\
+                  : test-loop begin 1 - dup dup while repeat ;\
+                  test-loop", 0 , "./file.txt", &forth);
+
+    forth_init(&forth, stdin, 1000, 1000, 1000);
+    a = forth.executing;
+    forth.executing -= 1;
+    next(&forth);
+    mu_check(forth.executing == a);
+    forth_free(&forth);
+}
+
 MU_TEST(forth_tests_run) {
     struct forth forth = {0};
     FILE *file;
@@ -61,6 +169,7 @@ MU_TEST(forth_tests_nocompileword) {
 MU_TEST(forth_tests_init_free) {
     struct forth forth = {0};
     forth_init(&forth, stdin, 100, 100, 100);
+
     mu_check(forth.memory == forth.memory_free);
     mu_check(forth.memory != NULL);
     mu_check(forth.sp0 == forth.sp);
@@ -151,6 +260,7 @@ MU_TEST(forth_tests_literal) {
 }
 
 MU_TEST_SUITE(forth_tests) {
+    MU_RUN_TEST(forth_tests_words);
     MU_RUN_TEST(forth_tests_run);
     MU_RUN_TEST(forth_tests_readword);
     MU_RUN_TEST(forth_tests_top);
