@@ -17,6 +17,7 @@ void words_add(struct forth *forth)
 
     forth_add_codeword(forth, "key", key);
     forth_add_codeword(forth, "chtop", chtop);
+    forth_add_codeword(forth, "\\", comment);
 
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
@@ -68,6 +69,14 @@ void words_add(struct forth *forth)
     assert(!status);
 }
 
+void comment(struct forth *forth) {
+    int flag;
+    flag = fgetc(forth->input);
+    while (flag != '\n'&& flag > 0) {
+        flag = fgetc(forth->input);
+    }
+}
+
 void chtop(struct forth *forth) {
     printf("%c \n", (char)(*forth_top(forth)));
 }
@@ -78,7 +87,7 @@ void key(struct forth *forth) {
     while (isspace(flag)){
         flag = fgetc(forth->input);
     }
-    if (flag != EOF) {
+    if (flag > 0) {
         forth_push(forth, flag);
     }
 }
