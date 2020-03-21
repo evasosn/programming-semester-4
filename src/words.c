@@ -18,6 +18,7 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "key", key);
     forth_add_codeword(forth, "chtop", chtop);
     forth_add_codeword(forth, "\\", comment);
+    forth_add_codeword(forth, "(", block_comment);
 
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
@@ -67,6 +68,23 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "next", next);
     status = forth_add_compileword(forth, "square", square);
     assert(!status);
+}
+
+void block_comment(struct forth *forth) {
+    int count = 0;
+    int flag = fgetc(forth->input);
+    while (flag > 0) {
+        if (flag == '(') {
+            count++;
+        }
+        if (count == 0 && flag == ')') {
+            break;
+        }
+        if (flag == ')') {
+            count--;
+        }
+        flag = fgetc(forth->input);
+    }
 }
 
 void comment(struct forth *forth) {
