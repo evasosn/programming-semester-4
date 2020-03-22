@@ -18,8 +18,9 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "key", key);
     forth_add_codeword(forth, "chtop", chtop);
     forth_add_codeword(forth, "\\", comment);
+    forth->latest->immediate = true;
     forth_add_codeword(forth, "(", block_comment);
-
+    forth->latest->immediate = true;
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
     forth_add_codeword(forth, "+", add);
