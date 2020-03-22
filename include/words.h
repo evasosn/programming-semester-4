@@ -3,6 +3,8 @@
 #include "forth.h"
 
 void words_add(struct forth *forth);
+void cntword(struct forth *forth);
+void stat(struct forth *forth);
 
 void drop(struct forth *forth);
 void _dup(struct forth *forth);

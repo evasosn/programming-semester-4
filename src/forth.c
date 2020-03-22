@@ -28,6 +28,7 @@ int forth_init(struct forth *forth, FILE *input,
     forth->latest = NULL;
     forth->executing = NULL;
     forth->is_compiling = false;
+    forth->countword = 0;
     forth->input = input;
 
     return forth->memory == NULL || forth->sp0 == NULL;
@@ -84,10 +85,12 @@ struct word* word_add(struct forth *forth,
     uint8_t length, const char name[length])
 {
     struct word* word = (struct word*)forth->memory_free;
+    forth->countword++;
     word->next = forth->latest;
     word->length = length;
     word->hidden = false;
     word->immediate = false;
+    word->count = 0;
     memcpy(word->name, name, length);
     forth->memory_free = (cell*)word_code(word);
     assert((char*)forth->memory_free >= word->name + length);
@@ -155,7 +158,7 @@ enum forth_result read_word(FILE* source,
     size_t buffer_size, char buffer[buffer_size], size_t *length)
 {
     size_t l = 0;
-    int c; 
+    int c;
     while ((c = fgetc(source)) != EOF && l < buffer_size) {
         // isspace(c) → l == 0
         if (isspace(c)) {
@@ -178,7 +181,7 @@ enum forth_result read_word(FILE* source,
     if (l >= buffer_size) {
         return FORTH_BUFFER_OVERFLOW;
     }
-    
+
     return FORTH_EOF;
 }
 
@@ -203,6 +206,8 @@ enum forth_result forth_run(struct forth* forth)
         if (word == NULL) {
             forth_run_number(forth, length, word_buffer);
         } else if (word->immediate || !forth->is_compiling) {
+            struct word* tmp = (void*)word;
+            tmp->count++;
             forth_run_word(forth, word);
         } else {
             forth_emit(forth, (cell)word);

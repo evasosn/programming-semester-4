@@ -5,6 +5,8 @@
 
 #include "words.h"
 
+int compare (const void*, const void*);
+
 void words_add(struct forth *forth)
 {
     int status = 0;
@@ -15,6 +17,8 @@ void words_add(struct forth *forth)
     forth->executing = &forth->stopword;
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
+    forth_add_codeword(forth, "count", cntword);
+    forth_add_codeword(forth, "stat", stat);
     forth_add_codeword(forth, "+", add);
     forth_add_codeword(forth, "-", sub);
     forth_add_codeword(forth, "*", mul);
@@ -62,6 +66,52 @@ void words_add(struct forth *forth)
 
     status = forth_add_compileword(forth, "square", square);
     assert(!status);
+}
+
+void cntword(struct forth *forth) {
+    size_t length;
+    char word_buffer[MAX_WORD+1] = {0};
+
+    if((read_word(
+            forth->input, sizeof(word_buffer),
+            word_buffer, &length)) == FORTH_OK) {
+        const struct word* word = word_find(forth->latest, length, word_buffer);
+        if(word){
+            printf("%-10s\t%d\n", word->name, word->count);
+            return;
+        }
+    }
+    printf("Error: Unknown word\n");
+}
+
+struct name {
+    char name[MAX_WORD + 1];
+    int count;
+};
+
+void stat(struct forth *forth) {
+    struct word* itr = forth->latest;
+    struct name* sort = (struct name*)malloc((forth->countword)*(sizeof(struct name)));
+    int i = 0;
+
+    printf("Statistics:\n");
+    while (itr) {
+        memcpy(sort[i].name, itr->name, itr->length);
+        (sort[i].name)[itr->length] = 0;
+        sort[i].count = itr->count;
+        i++;
+        itr = itr->next;
+    }
+
+    qsort(sort,(forth->countword), sizeof(struct name), compare);
+    for (int j = 0; j < forth->countword ; j++) {
+        printf("%-10s\t %d\n", sort[j].name, sort[j].count);
+    }
+    free(sort);
+}
+
+int compare(const void* a, const void* b) {
+    return (*(struct name*)b).count - (*(struct name*)a).count;
 }
 
 void drop(struct forth *forth) {

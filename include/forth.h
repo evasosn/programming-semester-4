@@ -14,6 +14,7 @@ struct word {
     bool compiled;
     bool hidden;
     bool immediate;
+    int count;
     uint8_t length;
     char name[];
 };
@@ -32,6 +33,7 @@ struct forth {
     cell *memory_free;
     cell *sp0;
     cell *rp0;
+    int countword;
     size_t memory_size;
     size_t return_size;
     size_t data_size;
