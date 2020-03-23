@@ -85,9 +85,9 @@ struct word* word_add(struct forth *forth,
 {
     struct word* word = (struct word*)forth->memory_free;
     word->next = forth->latest;
-    word->length = length;
-    word->hidden = false;
-    word->immediate = false;
+    word->length &= (~(1 << 6));//hidden = false;
+    word->length &= (~(1 << 5));//immediate = false;
+    word->length = (word->length & (7 << 5))| length;
     memcpy(word->name, name, length);
     forth->memory_free = (cell*)word_code(word);
     assert((char*)forth->memory_free >= word->name + length);
@@ -97,7 +97,7 @@ struct word* word_add(struct forth *forth,
 
 const void* word_code(const struct word *word)
 {
-    uintptr_t size = align(sizeof(struct word) + 1 + word->length, sizeof(cell));
+    uintptr_t size = align(sizeof(struct word) + 1 + ((word->length)&(31))/*word->length*/, sizeof(cell));
     return (const void*)((uint8_t*)word + size);
 }
 
@@ -105,8 +105,8 @@ const struct word* word_find(const struct word* word,
     uint8_t length, const char name[length])
 {
     while (word) {
-        if (!word->hidden
-            && length == word->length
+        if (!(((word->length)&(1 << 6)) >> 6)/*word->hidden*/
+            && length == ((word->length)&(31))/*word->length*/
             && ! strncmp(word->name, name, length)) {
             return word;
         }
@@ -124,8 +124,8 @@ void forth_add_codeword(struct forth *forth,
     const char* name, const function handler)
 {
     struct word *word = word_add(forth, strlen(name), name);
-    word->compiled = false;
-    assert(strlen(name) <= 32);
+    word->length &= (~(1 << 7)); //word->compiled = false;
+    assert(strlen(name) <= 31);
     forth_emit(forth, (cell)handler);
 }
 
@@ -134,7 +134,7 @@ int forth_add_compileword(struct forth *forth,
     const char *name, const char** words)
 {
     struct word *word = word_add(forth, strlen(name), name);
-    word->compiled = true;
+    word->length |= (1 << 7);//word->compiled = true;
     while (*words) {
         const struct word* word = word_find(forth->latest, strlen(*words), *words);
         if (!word) {
@@ -155,7 +155,7 @@ enum forth_result read_word(FILE* source,
     size_t buffer_size, char buffer[buffer_size], size_t *length)
 {
     size_t l = 0;
-    int c; 
+    int c;
     while ((c = fgetc(source)) != EOF && l < buffer_size) {
         // isspace(c) → l == 0
         if (isspace(c)) {
@@ -178,7 +178,7 @@ enum forth_result read_word(FILE* source,
     if (l >= buffer_size) {
         return FORTH_BUFFER_OVERFLOW;
     }
-    
+
     return FORTH_EOF;
 }
 
@@ -202,7 +202,7 @@ enum forth_result forth_run(struct forth* forth)
         const struct word* word = word_find(forth->latest, length, word_buffer);
         if (word == NULL) {
             forth_run_number(forth, length, word_buffer);
-        } else if (word->immediate || !forth->is_compiling) {
+        } else if ((word->length & (1 << 5)) >> 5 /*word->immediate*/ || !forth->is_compiling) {
             forth_run_word(forth, word);
         } else {
             forth_emit(forth, (cell)word);
@@ -231,13 +231,13 @@ static void forth_run_number(struct forth *forth,
 static void forth_run_word(struct forth *forth, const struct word *word)
 {
     do {
-        //printf("%.*s\n", (int)word->length, word->name);
+        //printf("%.*s\n", (int)(3<<word->length), word->name);
         // FIXME: (1 балл) как избавиться от этого условия
         // и всегда безусловно увеличивать forth->executing на 1?
         if (*forth->executing != forth->stopword) {
             forth->executing += 1;
         }
-        if (!word->compiled) {
+        if (!((word->length & (1 << 7)) >> 7) /*word->compiled*/) {
             // ISO C forbids conversion of object pointer to function pointer type
             const function code = ((struct { function fn; }*)word_code(word))->fn;
             code(forth);

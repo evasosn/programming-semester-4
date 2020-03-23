@@ -39,7 +39,7 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "lit", literal);
     forth_add_codeword(forth, ":", compile_start);
     forth_add_codeword(forth, ";", compile_end);
-    forth->latest->immediate = true;
+    forth->latest->length |= (1 << 5);//immediate = true;
     forth_add_codeword(forth, "'", literal);
 
     forth_add_codeword(forth, ">r", rpush);
@@ -52,7 +52,7 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "branch", branch);
     forth_add_codeword(forth, "0branch", branch0);
     forth_add_codeword(forth, "immediate", immediate);
-    forth->latest->immediate = true;
+    forth->latest->length |= (1 << 5);//immediate = true;
 
     forth_add_codeword(forth, "word", next_word);
     forth_add_codeword(forth, ">cfa", _word_code);
@@ -228,8 +228,8 @@ void compile_start(struct forth *forth)
 
     word = word_add(forth, (uint8_t)length, buffer);
     forth->is_compiling = true;
-    word->hidden = true;
-    word->compiled = true;
+    word->length |= (1 << 6); //word->hidden = true;
+    word->length |= (1 << 7); //word->compiled = true;
 }
 
 void compile_end(struct forth *forth)
@@ -238,7 +238,8 @@ void compile_end(struct forth *forth)
     assert(exit);
     forth_emit(forth, (cell)exit);
     forth->is_compiling = false;
-    forth->latest->hidden = false;
+
+    forth->latest->length&= (~(1 << 6));//hidden = false;
 }
 
 void rpush(struct forth *forth) {
@@ -302,7 +303,7 @@ void branch0(struct forth *forth)
 
 void immediate(struct forth *forth)
 {
-    forth->latest->immediate = !forth->latest->immediate;
+    forth->latest->length ^= (1 << 5);//immediate = !immediate
 }
 
 void next_word(struct forth *forth)
