@@ -5,7 +5,7 @@
 MU_TEST(forth_tests_init_free) {
     struct forth forth = {0};
     forth_init(&forth, stdin, 100, 100, 100);
-    
+
     mu_check(forth.memory == forth.memory_free);
     mu_check(forth.memory != NULL);
     mu_check(forth.sp0 == forth.sp);
@@ -85,7 +85,7 @@ MU_TEST(forth_tests_literal) {
     const struct word *literal = word_find(forth.latest, strlen("lit"), "lit");
     const struct word *exit = word_find(forth.latest, strlen("exit"), "exit");
     struct word *test = word_add(&forth, strlen("TEST"), "TEST");
-    test->compiled = true;
+    test->length |= (1 << 7);
     forth_emit(&forth, (cell)literal);
     forth_emit(&forth, 4567);
     forth_emit(&forth, (cell)exit);
