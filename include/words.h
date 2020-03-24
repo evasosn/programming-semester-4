@@ -4,6 +4,10 @@
 
 void words_add(struct forth *forth);
 
+void hex(struct forth *forth);
+void dec(struct forth *forth);
+void oct(struct forth *forth);
+void bin(struct forth *forth);
 void drop(struct forth *forth);
 void _dup(struct forth *forth);
 void add(struct forth *forth);

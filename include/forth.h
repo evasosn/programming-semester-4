@@ -26,7 +26,7 @@ struct forth {
     struct word *latest;
     struct word *stopword;
     bool is_compiling;
-
+    int num_system;
     FILE* input;
 
     cell *memory_free;
@@ -61,7 +61,7 @@ void forth_add_codeword(struct forth *forth,
 int forth_add_compileword(struct forth *forth,
     const char* name, const char** words);
 
-void cell_print(cell c);
+void cell_print(cell c, int base);
 
 enum forth_result {
     FORTH_OK,

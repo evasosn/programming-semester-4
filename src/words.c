@@ -13,6 +13,10 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "interpret", interpreter_stub);
     forth->stopword = forth->latest;
     forth->executing = &forth->stopword;
+    forth_add_codeword(forth, "hex", hex);
+    forth_add_codeword(forth, "dec", dec);
+    forth_add_codeword(forth, "oct", oct);
+    forth_add_codeword(forth, "bin", bin);
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
     forth_add_codeword(forth, "+", add);
@@ -62,6 +66,22 @@ void words_add(struct forth *forth)
 
     status = forth_add_compileword(forth, "square", square);
     assert(!status);
+}
+
+void hex(struct forth *forth) {
+    forth->num_system = 16;
+}
+
+void dec(struct forth *forth) {
+    forth->num_system = 10;
+}
+
+void oct(struct forth *forth) {
+    forth->num_system = 8;
+}
+
+void bin(struct forth *forth) {
+    forth->num_system = 2;
 }
 
 void drop(struct forth *forth) {
@@ -138,7 +158,7 @@ void rot(struct forth *forth) {
 void show(struct forth *forth) {
     const cell *c = forth->sp0;
     while (c <= forth_top(forth)) {
-        cell_print(*c);
+        cell_print(*c, forth->num_system);
         c += 1;
     }
     printf("(top)\n");
@@ -258,7 +278,7 @@ void rtop(struct forth  *forth) {
 void rshow(struct forth *forth) {
     const cell *c = forth->rp0;
     while (c < forth->rp) {
-        cell_print(*c);
+        cell_print(*c, forth->num_system);
         c += 1;
     }
     printf("(r-top)\n");
