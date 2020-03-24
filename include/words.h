@@ -4,6 +4,7 @@
 
 void words_add(struct forth *forth);
 
+void see(struct forth *forth);
 void drop(struct forth *forth);
 void _dup(struct forth *forth);
 void add(struct forth *forth);

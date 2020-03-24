@@ -13,6 +13,7 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "interpret", interpreter_stub);
     forth->stopword = forth->latest;
     forth->executing = &forth->stopword;
+    forth_add_codeword(forth, "see", see);
     forth_add_codeword(forth, "drop", drop);
     forth_add_codeword(forth, "dup", _dup);
     forth_add_codeword(forth, "+", add);
@@ -62,6 +63,33 @@ void words_add(struct forth *forth)
 
     status = forth_add_compileword(forth, "square", square);
     assert(!status);
+}
+
+void see(struct forth *forth) {
+    size_t length;
+    enum forth_result read_result;
+    char word_buffer[MAX_WORD+1] = {0};
+
+    read_result = read_word(forth->input, sizeof(word_buffer), word_buffer, &length);
+    if(read_result == FORTH_OK) {
+        const struct word* word = word_find(forth->latest, length, word_buffer);
+        if(word && !word->compiled) {
+            cell_print((cell)word);
+            printf("\n");
+            return;
+        }
+        else if(word && word->compiled) {
+            struct word **itr = (struct word**)word_code(word);
+            while((*itr) && strcmp((*itr)->name,"exit") != 0) {
+                printf("%s\n", (*itr)->name);
+                itr++;
+                //printf("1\n");
+            }
+
+            return;
+        }
+    }
+    printf("Error: Unknown word\n");
 }
 
 void drop(struct forth *forth) {
