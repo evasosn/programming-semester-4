@@ -81,15 +81,28 @@ void see(struct forth *forth) {
         else if(word && word->compiled) {
             struct word **itr = (struct word**)word_code(word);
             while(strcmp((*itr)->name,"exit") != 0) {
-                if (strcmp((*itr)->name,"lit") == 0){
+                if(strcmp((*itr)->name,"0branch") == 0 ||
+                   strcmp((*itr)->name,"branch") == 0)
+                {
+                    const struct word* comma = word_find(forth->latest, strlen(","), ",");
+                    itr++;
+                    printf("%s ", (*(itr-1))->name);
+                    if(*itr == comma) {
+                        printf("%s ", (*(itr))->name);
+                    }
+                    else {
+                        cell_print((cell)(*itr));
+                    }
+                }
+                else if (strcmp((*itr)->name,"lit") == 0) {
                     itr++;
                     cell_print((cell)(*itr));
                 }else{
-                    printf("%s\n", (*itr)->name);
+                    printf("%s ", (*itr)->name);
                 }
                 itr++;
-                //printf("1\n");
             }
+            printf("\n");
             return;
         }
     }
