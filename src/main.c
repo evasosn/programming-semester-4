@@ -14,19 +14,20 @@ int main(int argc, char** argv)
     struct forth forth = {0};
     forth_init(&forth, stdin, MAX_DATA, MAX_STACK, MAX_RETURN);
     words_add(&forth);
-
+    int end = 0;
     for (int i = 1; i < argc; i++){
         input = fopen(argv[i],"r");
         if (input) {
             forth.input = input;
             forth_run(&forth);
+            end = i;
         }
     }
-    if (argc || !strcmp(argv[argc - 1], "-")) {
+    //printf("%d\n", end);
+    if (argc == 1  || (strcmp(argv[argc - 1], "-") == 0 && (end != argc - 1))) {
         forth.input = stdin;
         forth_run(&forth);
     }
-    
     forth_free(&forth);
     return 0;
 }
