@@ -80,12 +80,16 @@ void see(struct forth *forth) {
         }
         else if(word && word->compiled) {
             struct word **itr = (struct word**)word_code(word);
-            while((*itr) && strcmp((*itr)->name,"exit") != 0) {
-                printf("%s\n", (*itr)->name);
+            while(strcmp((*itr)->name,"exit") != 0) {
+                if (strcmp((*itr)->name,"lit") == 0){
+                    itr++;
+                    cell_print((cell)(*itr));
+                }else{
+                    printf("%s\n", (*itr)->name);
+                }
                 itr++;
                 //printf("1\n");
             }
-
             return;
         }
     }
