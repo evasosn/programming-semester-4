@@ -151,8 +151,13 @@ int forth_add_compileword(struct forth *forth,
 void cell_print(cell cell, int base) {
     if (base == 10){
         printf("%"PRIdPTR" ", cell);
+        return;
     }
-    else if (base == 16){
+    if(cell >> 63){
+        cell = ~(cell - 1);
+        printf("-");
+    }
+    if (base == 16){
         printf("%"PRIXPTR" ", cell);
     }
     else if (base == 8){
@@ -160,10 +165,6 @@ void cell_print(cell cell, int base) {
     }
     else if (base == 2){
         int i = 63;
-        if(cell >> 63){
-            cell = ~(cell - 1);
-            printf("-");
-        }
         while((((cell >> i) & 1) == 0)&& (i!=0)){
             i--;
         }
