@@ -91,10 +91,18 @@ void see(struct forth *forth) {
                         printf("%s ", (*(itr))->name);
                     }
                     else {
-                        cell_print((cell)(*itr));
+                        const struct word *k = word;
+                        cell i = (cell)(*itr)/sizeof(cell) - 2;
+                        while(i != 0) {
+                            k = k->next;
+                            i--;
+                        }
+                        //cell_print((cell)(*itr));
+                        printf("%s ", k->name);
                     }
                 }
                 else if (strcmp((*itr)->name,"lit") == 0) {
+                    printf("%s ", (*itr)->name);
                     itr++;
                     cell_print((cell)(*itr));
                 }else{
