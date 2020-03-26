@@ -57,6 +57,7 @@ void words_add(struct forth *forth)
     forth_add_codeword(forth, "word", next_word);
     forth_add_codeword(forth, ">cfa", _word_code);
     forth_add_codeword(forth, "find", find);
+    forth_add_codeword(forth, "findnum", find_num);
     forth_add_codeword(forth, ",", comma);
     forth_add_codeword(forth, "next", next);
 
@@ -321,6 +322,14 @@ void find(struct forth *forth)
     const char *name = (const char *)name_address;
     const struct word *word = word_find(forth->latest, length, name);
     forth_push(forth, (cell)word);
+}
+
+void find_num(struct forth *forth)
+{
+    cell length = forth_pop(forth);
+    cell name_address = forth_pop(forth);
+    const char *name = (const char *)name_address;
+    forth_run_number(forth, length, name);
 }
 
 void _word_code(struct forth *forth)

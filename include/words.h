@@ -46,6 +46,7 @@ void immediate(struct forth *forth);
 
 void next_word(struct forth *forth);
 void find(struct forth *forth);
+void find_num(struct forth *forth);
 void _word_code(struct forth *forth);
 void comma(struct forth *forth);
 
