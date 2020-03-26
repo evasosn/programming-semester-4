@@ -74,3 +74,5 @@ enum forth_result read_word(FILE* source,
     size_t buffer_size, char buffer[buffer_size], size_t *length);
 
 enum forth_result forth_run(struct forth* forth);
+
+intptr_t strtoiptr(const char* ptr, char** endptr, int base);

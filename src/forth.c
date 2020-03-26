@@ -8,7 +8,6 @@
 #include <string.h>
 
 static uintptr_t align(uintptr_t value, uint8_t alignment);
-static intptr_t strtoiptr(const char* ptr, char** endptr, int base);
 
 int forth_init(struct forth *forth, FILE *input,
     size_t memory, size_t stack, size_t ret)
@@ -155,7 +154,7 @@ enum forth_result read_word(FILE* source,
     size_t buffer_size, char buffer[buffer_size], size_t *length)
 {
     size_t l = 0;
-    int c; 
+    int c;
     while ((c = fgetc(source)) != EOF && l < buffer_size) {
         // isspace(c) → l == 0
         if (isspace(c)) {
@@ -178,7 +177,7 @@ enum forth_result read_word(FILE* source,
     if (l >= buffer_size) {
         return FORTH_BUFFER_OVERFLOW;
     }
-    
+
     return FORTH_EOF;
 }
 
@@ -250,7 +249,7 @@ static void forth_run_word(struct forth *forth, const struct word *word)
     } while (word != forth->stopword);
 }
 
-static intptr_t strtoiptr(const char* ptr, char** endptr, int base) {
+intptr_t strtoiptr(const char* ptr, char** endptr, int base) {
     if (sizeof(intptr_t) <= sizeof(long)) {
         return (intptr_t)strtol(ptr, endptr, base);
     } else {

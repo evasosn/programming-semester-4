@@ -326,10 +326,17 @@ void find(struct forth *forth)
 
 void find_num(struct forth *forth)
 {
+    char* end;
     cell length = forth_pop(forth);
     cell name_address = forth_pop(forth);
     const char *name = (const char *)name_address;
-    forth_run_number(forth, length, name);
+    intptr_t number = strtoiptr(name, &end, 10);
+    if (end - name >= (int)length){
+        forth_push(forth, number);
+        return;
+    }
+    printf("ERROR: It is not number\n");
+    assert(end - name < (int)length);
 }
 
 void _word_code(struct forth *forth)
